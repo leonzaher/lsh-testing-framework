@@ -5,31 +5,27 @@ import string
 from .generator_settings import GeneratorSettings
 
 
-def generate_duplicates(generator_settings: GeneratorSettings, expression: str) -> list:
-    duplicates = []
+def generate_duplicates(generator_settings: GeneratorSettings, expression_data: map) -> map:
+    duplicate: str = expression_data["expression"]
 
-    duplicates_count = generator_settings.duplicates_count_distribution.random()
+    mistakes_count = generator_settings.mistake_count_distribution.random()
 
-    for i in range(0, duplicates_count):
-        duplicate: str = expression
+    for j in range(0, mistakes_count):
+        mistake_index: int = random.randint(0, len(duplicate) - 1)
 
-        mistakes_count = generator_settings.mistake_count_distribution.random()
+        allowed_chars: list = list(string.digits) + generator_settings.operators_list
+        # remove the character duplicate[mistake_index] so it doesn't get chosen
+        allowed_chars.remove(duplicate[mistake_index])
 
-        for j in range(0, mistakes_count):
-            mistake_index: int = random.randint(0, len(duplicate) - 1)
+        substitute_char: chr = random.choice(allowed_chars)
 
-            allowed_chars: list = list(string.digits) + generator_settings.operators_list
-            # remove the character duplicate[mistake_index] so it doesn't get chosen
-            allowed_chars.remove(duplicate[mistake_index])
+        # replace the character on mistake_index with substitute_char
+        duplicate = duplicate[:mistake_index] + substitute_char + duplicate[mistake_index + 1:]
 
-            substitute_char: chr = random.choice(allowed_chars)
+    data_map = {"expression": duplicate, "isDuplicate": True, "original": expression_data["expression"],
+                "original_index": expression_data["index"]}
 
-            # replace the character on mistake_index with substitute_char
-            duplicate = duplicate[:mistake_index] + substitute_char + duplicate[mistake_index + 1:]
-
-        duplicates.append(duplicate)
-
-    return duplicates
+    return data_map
 
 
 def generate_string(generator_settings: GeneratorSettings) -> map:
@@ -61,18 +57,9 @@ def generate_string(generator_settings: GeneratorSettings) -> map:
         if len(expression) < max_length:
             expression = expression + operator
 
-    data = []
-
     data_map = {"expression": expression, "isDuplicate": False}
-    data.append(data_map)
 
-    duplicates: list = generate_duplicates(generator_settings, expression)
-
-    for duplicate in duplicates:
-        data_map = {"expression": duplicate, "isDuplicate": True, "original": expression}
-        data.append(data_map)
-
-    return data
+    return data_map
 
 
 def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list:
@@ -84,9 +71,20 @@ def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list
     data = []
 
     for i in range(0, max_items):
-        data_chunk: list = generate_string(generator_settings)
+        expression_data = generate_string(generator_settings)
+        expression_index = len(data)
+        expression_data["index"] = expression_index
 
-        data = data + data_chunk
+        data.append(expression_data)
+
+        duplicates_count = generator_settings.duplicates_count_distribution.random()
+
+        for j in range(0, duplicates_count):
+            duplicate_data = generate_duplicates(generator_settings, expression_data)
+            duplicate_data["index"] = len(data)
+            data.append(duplicate_data)
+
+    print(data)
 
     return data
 
