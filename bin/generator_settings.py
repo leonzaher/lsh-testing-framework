@@ -14,8 +14,7 @@ class GeneratorSettings(object):
 
         self.operators_list: list = None
 
-        self.default_string_delimiter = "\n"
-        self.default_line_delimiter = "\n\n"
+        self.delimiter = "\n"
 
     def set_mistake_count_distribution(self, distribution: AbstractDistribution):
         self.mistake_count_distribution = distribution

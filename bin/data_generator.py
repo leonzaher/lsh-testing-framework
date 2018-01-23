@@ -32,7 +32,7 @@ def generate_duplicates(generator_settings: GeneratorSettings, expression: str) 
     return duplicates
 
 
-def generate_string(generator_settings: GeneratorSettings) -> list:
+def generate_string(generator_settings: GeneratorSettings) -> map:
     max_length = generator_settings.length_distribution.random()
 
     expression: str = ""
@@ -61,22 +61,51 @@ def generate_string(generator_settings: GeneratorSettings) -> list:
         if len(expression) < max_length:
             expression = expression + operator
 
-    return [expression] + generate_duplicates(generator_settings, expression)
+    data = []
+
+    data_map = {"expression": expression, "isDuplicate": False}
+    data.append(data_map)
+
+    duplicates: list = generate_duplicates(generator_settings, expression)
+
+    for duplicate in duplicates:
+        data_map = {"expression": duplicate, "isDuplicate": True, "original": expression}
+        data.append(data_map)
+
+    return data
 
 
-def generate_data(generator_settings: GeneratorSettings, max_items: int, output_file: str):
+def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list:
     """
         Generate data in the form of strings. Data is generated using the generate_string function.
-        Data is written to output file.
+        Data is represented as a list of maps of format {"expression": str, "isDuplicate": boolean, "original": str}
     """
 
-    file = open(output_file, 'w')
+    data = []
 
     for i in range(0, max_items):
-        string_list: list = generate_string(generator_settings)
+        data_chunk: list = generate_string(generator_settings)
 
-        line = generator_settings.default_string_delimiter.join(string_list) + generator_settings.default_line_delimiter
+        data = data + data_chunk
+
+    return data
+
+
+def write_data_to_file(generator_settings: GeneratorSettings, data: list, filepath: str):
+    file = open(filepath, 'w')
+
+    line_index = 0
+
+    for map in data:
+        if not map["isDuplicate"]:
+            file.write(generator_settings.delimiter)
+
+        line = str(line_index) + " " + map["expression"]
+
+        line = line + generator_settings.delimiter
 
         file.write(line)
+
+        line_index += 1
 
     file.close()
