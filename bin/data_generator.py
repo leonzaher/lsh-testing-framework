@@ -22,8 +22,8 @@ def generate_duplicates(generator_settings: GeneratorSettings, expression_data: 
         # replace the character on mistake_index with substitute_char
         duplicate = duplicate[:mistake_index] + substitute_char + duplicate[mistake_index + 1:]
 
-    data_map = {"expression": duplicate, "isDuplicate": True, "original": expression_data["expression"],
-                "original_index": expression_data["index"]}
+    data_map = {"expression": duplicate, "is_duplicate": True, "original": expression_data["expression"],
+                "parent_index": expression_data["index"]}
 
     return data_map
 
@@ -57,7 +57,7 @@ def generate_string(generator_settings: GeneratorSettings) -> map:
         if len(expression) < max_length:
             expression = expression + operator
 
-    data_map = {"expression": expression, "isDuplicate": False}
+    data_map = {"expression": expression, "is_duplicate": False}
 
     return data_map
 
@@ -95,7 +95,7 @@ def write_data_to_file(generator_settings: GeneratorSettings, data: list, filepa
     line_index = 0
 
     for map in data:
-        if not map["isDuplicate"]:
+        if not map["is_duplicate"]:
             file.write(generator_settings.delimiter)
 
         line = str(line_index) + " " + map["expression"]

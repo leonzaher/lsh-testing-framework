@@ -2,6 +2,11 @@ from bin.generator_settings import GeneratorSettings
 from bin.distributions.uniform import UniformDistribution
 from bin.distributions.normal import NormalDistribution
 from bin import data_generator
+from bin.metric_analysis import calculate_metrics
+from bin.metric_analysis.stats import Stats
+
+from datasketch import MinHash, MinHashLSH
+from nltk import ngrams
 
 
 def generate_sample_data() -> list:
@@ -27,11 +32,49 @@ def generate_sample_data() -> list:
     return data
 
 
+def run_minhash(expression_list: list) -> list:
+    threshold = 0.5
+
+    lsh = MinHashLSH(threshold, num_perm=128)
+
+    results_list = []
+
+    # Create MinHash objects
+    minhashes = {}
+    for c, i in enumerate(expression_list):
+        minhash = MinHash(num_perm=128)
+        for d in ngrams(i, 3):
+            minhash.update("".join(d).encode('utf-8'))
+        lsh.insert(c, minhash)
+        minhashes[c] = minhash
+
+    for i in range(len(minhashes.keys())):
+        result = lsh.query(minhashes[i])
+        result.remove(i)
+
+        result_map = {"index": i, "predicted": result}
+
+        results_list.append(result_map)
+
+        print("Candidates with Jaccard similarity >", threshold, "for input", i, ":", result)
+
+    return results_list
+
+
 def main():
     data = generate_sample_data()
 
-    print(data)
+    expression_list = [map["expression"] for map in data]
+
+    results = run_minhash(expression_list)
+
+    stats: Stats = calculate_metrics.calculate_stats(data, results)
+
+    print("Precision is:", calculate_metrics.calculate_precision(stats))
+    print("Recall is:", calculate_metrics.calculate_recall(stats))
 
 
 if __name__ == '__main__':
     main()
+
+# TODO: turn maps into objects
