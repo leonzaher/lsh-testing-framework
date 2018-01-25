@@ -1,11 +1,14 @@
 from datasketch import MinHash, MinHashLSH
 from nltk import ngrams
+from typing import List
+
+from .algorithm_result import AlgorithmResult
 
 
-def minhash(expression_list: list, threshold: float) -> list:
+def minhash(expression_list: List[str], threshold: float) -> List[AlgorithmResult]:
     lsh = MinHashLSH(threshold, num_perm=128)
 
-    results_list = []
+    results_list: List[AlgorithmResult] = []
 
     # Create MinHash objects
     minhashes = {}
@@ -17,13 +20,11 @@ def minhash(expression_list: list, threshold: float) -> list:
         minhashes[c] = minhash
 
     for i in range(len(minhashes.keys())):
-        result = lsh.query(minhashes[i])
-        result.remove(i)
+        predicted_indexes = lsh.query(minhashes[i])
+        predicted_indexes.remove(i)
 
-        result_map = {"index": i, "predicted": result}
+        result = AlgorithmResult(index=i, predicted_indexes=predicted_indexes)
 
-        results_list.append(result_map)
-
-        # print("Candidates with Jaccard similarity >", threshold, "for input", i, ":", result)
+        results_list.append(result)
 
     return results_list

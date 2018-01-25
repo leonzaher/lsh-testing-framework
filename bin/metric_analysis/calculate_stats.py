@@ -3,6 +3,7 @@ import collections
 from typing import List
 
 from ..data_generator.expression_data import ExpressionData
+from ..algorithms.algorithm_result import AlgorithmResult
 from .stats import Stats
 
 
@@ -42,11 +43,11 @@ def calculate_stats(data: List[ExpressionData], algorithm_results: list) -> Stat
     return stats
 
 
-def extract_indexes(data: List[ExpressionData], prediction: map):
+def extract_indexes(data: List[ExpressionData], prediction: AlgorithmResult):
     """
     Used for extracting predicted indexes from the prediction map and true indexes from data list
     """
-    current_index: int = prediction["index"]
+    current_index: int = prediction.index
 
     current_data = data[current_index]
 
@@ -65,8 +66,6 @@ def extract_indexes(data: List[ExpressionData], prediction: map):
 
     true_indexes.append(parent_index)
 
-    predicted_indexes = prediction["predicted"]
-
     ReturnResult = collections.namedtuple("ReturnResult", ["true_indexes", "predicted_indexes"])
 
-    return ReturnResult(true_indexes=true_indexes, predicted_indexes=predicted_indexes)
+    return ReturnResult(true_indexes=true_indexes, predicted_indexes=prediction.predicted_indexes)
