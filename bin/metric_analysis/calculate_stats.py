@@ -19,20 +19,13 @@ def calculate_stats(data: list, algorithm_results: list) -> Stats:
         for index in predicted_indexes:
             if index in true_indexes:
                 stats.true_positive += 1
-                #
                 false_negative_indexes.remove(index)
             else:
                 stats.false_positive += 1
 
+        stats.false_negative += len(false_negative_indexes)
+
     return stats
-
-
-def calculate_precision(stats: Stats) -> float:
-    return stats.true_positive / (stats.true_positive + stats.false_positive)
-
-
-def calculate_recall(stats: Stats) -> float:
-    return stats.true_positive / (stats.true_positive + stats.false_negative)
 
 
 def extract_indexes(data: list, prediction: map):
@@ -53,7 +46,6 @@ def extract_indexes(data: list, prediction: map):
         parent_index = current_data["index"]
 
     for element in data:
-        print(element)
         if element["is_duplicate"] and element["parent_index"] == parent_index and element["index"] != current_index:
             true_indexes.append(element["index"])
 
