@@ -2,6 +2,13 @@ import matplotlib.pyplot as plot
 
 
 def plot_metrics_list(metrics_list: list):
+    """
+    Plots graphs based on list of Metrics objects.
+    Plots multiple graphs on the same plot, where axis x is lsh algorithm threshold.
+
+    :param metrics_list: list of Metrics objects from bin.metric_analysis.metrics
+    :return:
+    """
     threshold_list = []
 
     precision_list = []
@@ -19,8 +26,8 @@ def plot_metrics_list(metrics_list: list):
     plot.plot(threshold_list, recall_list, label="recall")
     plot.plot(threshold_list, f1_list, label="f1")
 
-    plot.ylabel("lsh threshold")
-    plot.xlabel("value")
+    plot.xlabel("lsh threshold")
+    plot.ylabel("value")
 
     plot.legend()
 
