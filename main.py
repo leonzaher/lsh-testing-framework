@@ -1,12 +1,15 @@
+import numpy
+
 from bin.generator_settings import GeneratorSettings
 from bin.distributions.uniform import UniformDistribution
 from bin.distributions.normal import NormalDistribution
-from bin import data_generator
-from bin.metric_analysis import calculate_metrics
-from bin.metric_analysis.stats import Stats
 
-from datasketch import MinHash, MinHashLSH
-from nltk import ngrams
+from bin import data_generator
+from bin import plotter
+from bin.algorithms import minhash
+from bin.metric_analysis import calculate_stats
+from bin.metric_analysis.stats import Stats
+from bin.metric_analysis.metrics import Metrics
 
 
 def generate_sample_data() -> list:
@@ -32,46 +35,23 @@ def generate_sample_data() -> list:
     return data
 
 
-def run_minhash(expression_list: list) -> list:
-    threshold = 0.5
-
-    lsh = MinHashLSH(threshold, num_perm=128)
-
-    results_list = []
-
-    # Create MinHash objects
-    minhashes = {}
-    for c, i in enumerate(expression_list):
-        minhash = MinHash(num_perm=128)
-        for d in ngrams(i, 3):
-            minhash.update("".join(d).encode('utf-8'))
-        lsh.insert(c, minhash)
-        minhashes[c] = minhash
-
-    for i in range(len(minhashes.keys())):
-        result = lsh.query(minhashes[i])
-        result.remove(i)
-
-        result_map = {"index": i, "predicted": result}
-
-        results_list.append(result_map)
-
-        print("Candidates with Jaccard similarity >", threshold, "for input", i, ":", result)
-
-    return results_list
-
-
 def main():
     data = generate_sample_data()
 
     expression_list = [map["expression"] for map in data]
 
-    results = run_minhash(expression_list)
+    metrics_list = []
 
-    stats: Stats = calculate_metrics.calculate_stats(data, results)
+    for threshold in numpy.arange(0.0, 0.5, 0.01):
+        results = minhash.minhash(expression_list, threshold)
 
-    print("Precision is:", calculate_metrics.calculate_precision(stats))
-    print("Recall is:", calculate_metrics.calculate_recall(stats))
+        stats: Stats = calculate_stats.calculate_stats(data, results)
+
+        metrics: Metrics = Metrics(stats, threshold)
+
+        metrics_list.append(metrics)
+
+    plotter.plot_metrics_list(metrics_list)
 
 
 if __name__ == '__main__':
