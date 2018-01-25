@@ -1,18 +1,21 @@
 import numpy
 
-from bin.generator_settings import GeneratorSettings
+from typing import List
+
+from bin.data_generator.generator_settings import GeneratorSettings
 from bin.distributions.uniform import UniformDistribution
 from bin.distributions.normal import NormalDistribution
 
-from bin import data_generator
 from bin import plotter
+from bin.data_generator import data_generator
 from bin.algorithms import minhash
 from bin.metric_analysis import calculate_stats
 from bin.metric_analysis.stats import Stats
 from bin.metric_analysis.metrics import Metrics
+from bin.data_generator.expression_data import ExpressionData
 
 
-def generate_sample_data() -> list:
+def generate_sample_data() -> List[ExpressionData]:
     generator_settings: GeneratorSettings = GeneratorSettings()
 
     numbers_d = NormalDistribution(mean=10, stddev=2)
@@ -36,11 +39,11 @@ def generate_sample_data() -> list:
 
 
 def main():
-    data = generate_sample_data()
+    data: List[ExpressionData] = generate_sample_data()
 
-    expression_list = [map["expression"] for map in data]
+    expression_list = [expression_data.expression for expression_data in data]
 
-    metrics_list = []
+    metrics_list: List[Metrics] = []
 
     for threshold in numpy.arange(0.0, 0.5, 0.01):
         results = minhash.minhash(expression_list, threshold)

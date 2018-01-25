@@ -1,4 +1,4 @@
-from .distributions.abstract_distribution import AbstractDistribution
+from bin.distributions.abstract_distribution import AbstractDistribution
 
 
 class GeneratorSettings(object):

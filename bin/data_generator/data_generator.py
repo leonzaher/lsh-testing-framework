@@ -2,11 +2,15 @@ import random
 import math
 import string
 
-from .generator_settings import GeneratorSettings
+from typing import List
+
+from bin.data_generator.generator_settings import GeneratorSettings
+from .expression_data import ExpressionData
 
 
-def generate_duplicates(generator_settings: GeneratorSettings, expression_data: map) -> map:
-    duplicate: str = expression_data["expression"]
+def generate_duplicate(generator_settings: GeneratorSettings, expression_data: ExpressionData,
+                       index: int) -> ExpressionData:
+    duplicate: str = expression_data.expression
 
     mistakes_count = generator_settings.mistake_count_distribution.random()
 
@@ -22,13 +26,11 @@ def generate_duplicates(generator_settings: GeneratorSettings, expression_data: 
         # replace the character on mistake_index with substitute_char
         duplicate = duplicate[:mistake_index] + substitute_char + duplicate[mistake_index + 1:]
 
-    data_map = {"expression": duplicate, "is_duplicate": True, "original": expression_data["expression"],
-                "parent_index": expression_data["index"]}
-
-    return data_map
+    return ExpressionData(expression=duplicate, index=index, is_duplicate=True,
+                          parent_expression=expression_data.expression, parent_index=expression_data.index)
 
 
-def generate_string(generator_settings: GeneratorSettings) -> map:
+def generate_string(generator_settings: GeneratorSettings, index: int) -> ExpressionData:
     max_length = generator_settings.length_distribution.random()
 
     expression: str = ""
@@ -57,12 +59,11 @@ def generate_string(generator_settings: GeneratorSettings) -> map:
         if len(expression) < max_length:
             expression = expression + operator
 
-    data_map = {"expression": expression, "is_duplicate": False}
+    return ExpressionData(expression=expression, index=index, is_duplicate=False,
+                          parent_expression=None, parent_index=None)
 
-    return data_map
 
-
-def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list:
+def generate_data(generator_settings: GeneratorSettings, max_original_expressions: int) -> List[ExpressionData]:
     """
         Generate data in the form of strings. Data is generated using the generate_string function.
         Data is represented as a list of maps of format {"expression": str, "isDuplicate": boolean, "original": str}
@@ -70,18 +71,16 @@ def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list
 
     data = []
 
-    for i in range(0, max_items):
-        expression_data = generate_string(generator_settings)
+    for i in range(0, max_original_expressions):
         expression_index = len(data)
-        expression_data["index"] = expression_index
+        expression_data = generate_string(generator_settings, expression_index)
 
         data.append(expression_data)
 
         duplicates_count = generator_settings.duplicates_count_distribution.random()
 
         for j in range(0, duplicates_count):
-            duplicate_data = generate_duplicates(generator_settings, expression_data)
-            duplicate_data["index"] = len(data)
+            duplicate_data = generate_duplicate(generator_settings, expression_data, expression_index + j + 1)
             data.append(duplicate_data)
 
     print(data)
@@ -89,21 +88,17 @@ def generate_data(generator_settings: GeneratorSettings, max_items: int) -> list
     return data
 
 
-def write_data_to_file(generator_settings: GeneratorSettings, data: list, filepath: str):
+def write_data_to_file(generator_settings: GeneratorSettings, data: List[ExpressionData], filepath: str):
     file = open(filepath, 'w')
 
-    line_index = 0
-
-    for map in data:
-        if not map["is_duplicate"]:
+    for expression_data in data:
+        if not expression_data.is_duplicate:
             file.write(generator_settings.delimiter)
 
-        line = str(line_index) + " " + map["expression"]
+        line = str(expression_data.index) + " " + expression_data.expression
 
         line = line + generator_settings.delimiter
 
         file.write(line)
-
-        line_index += 1
 
     file.close()
