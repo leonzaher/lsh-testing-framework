@@ -1,0 +1,3 @@
+[submodule "submodules/MathDataGenerator"]
+	path = submodules/MathDataGenerator
+	url = git@github.com:leonzaher/math-data-generator.git
