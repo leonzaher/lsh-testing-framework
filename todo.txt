@@ -1,4 +1,0 @@
-TODO: turn maps into objects
-TODO: implement algorithms
-TODO: add plots for metrics
-TODO: add file input
