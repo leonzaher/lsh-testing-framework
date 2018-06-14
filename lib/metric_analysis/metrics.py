@@ -2,12 +2,16 @@ from .stats import Stats
 
 
 class Metrics(object):
-    def __init__(self, stats: Stats, lsh_threshold: float):
+    def __init__(self, stats: Stats):
         self.precision = calculate_precision(stats)
         self.recall = calculate_recall(stats)
         self.f1 = calculate_f1(stats)
 
-        self.lsh_threshold = lsh_threshold
+    def __repr__(self):
+        return "Metrics[ precision = {}, recall = {}, f1 = {}]".format(self.precision, self.recall, self.f1)
+
+    def __str__(self):
+        return "Metrics[ precision = {}, recall = {}, f1 = {}]".format(self.precision, self.recall, self.f1)
 
 
 def calculate_precision(stats: Stats) -> float:

@@ -2,8 +2,6 @@ import collections
 
 from typing import List
 
-from ..data_generator.expression_data import ExpressionData
-from ..algorithms.algorithm_result import AlgorithmResult
 from .stats import Stats
 
 
